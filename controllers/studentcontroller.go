@@ -99,7 +99,9 @@ func InsertStudent(w http.ResponseWriter, r *http.Request) {
 		return
 	} else {
 		name := student.Name
-		pass := student.Password
+		pass, _ := HashPassword(student.Password)
+		log.Println(pass)
+		log.Printf("%T", pass)
 		email := student.Email
 		phone := student.Phone
 		_, err := db.Exec("INSERT INTO students (student_name,student_email,student_phone,student_pass) VALUES (?,?,?,?)", name, email, phone, pass)

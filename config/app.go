@@ -13,7 +13,7 @@ func GetDB() *sql.DB {
 	dbName := "root"
 	dbPass := "ShanSud3198#"
 	dbTable := "edtech"
-	db, err := sql.Open(dbDriver, dbName+":"+dbPass+"@tcp("+dbURL+")/"+dbTable)
+	db, err := sql.Open(dbDriver, dbName+":"+dbPass+"@tcp("+dbURL+")/"+dbTable+"?charset=utf8mb4")
 	if err != nil {
 		log.Println("DB Connection Failed...")
 		log.Println(err.Error())
