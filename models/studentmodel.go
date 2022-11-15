@@ -13,3 +13,13 @@ type Response struct {
 	Message string    `json:"message"`
 	Data    []Student `json:"data,omitempty"`
 }
+
+type LoginInfo struct {
+	Email string `json:"student_email"`
+	Token string `json:"token"`
+}
+type LoginResponse struct {
+	Status  int       `json:"status"`
+	Message string    `json:"message"`
+	Data    LoginInfo `json:"data,omitempty"`
+}

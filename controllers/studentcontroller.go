@@ -91,17 +91,18 @@ func InsertStudent(w http.ResponseWriter, r *http.Request) {
 	var response models.Response
 	if r.Body == nil {
 		json.NewEncoder(w).Encode("Please Enter some Data!")
+		return
 	}
 
 	_ = json.NewDecoder(r.Body).Decode(&student)
-	if student.Name == "" && student.Password == "" && student.Email == "" {
-		json.NewEncoder(w).Encode("Please Enter some Data!")
+
+	if student.Password == "" || student.Email == "" {
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode("Email and Password are required")
 		return
 	} else {
 		name := student.Name
 		pass, _ := HashPassword(student.Password)
-		log.Println(pass)
-		log.Printf("%T", pass)
 		email := student.Email
 		phone := student.Phone
 		_, err := db.Exec("INSERT INTO students (student_name,student_email,student_phone,student_pass) VALUES (?,?,?,?)", name, email, phone, pass)
@@ -114,10 +115,11 @@ func InsertStudent(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		response.Status = 200
-		response.Message = "Data Inserted Successfully"
+		response.Message = "Student Created Successfully"
 		w.Header().Set("Content-Type", "application/json")
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 		json.NewEncoder(w).Encode(response)
+
 	}
 
 }
@@ -158,6 +160,11 @@ func UpdateStudent(w http.ResponseWriter, r *http.Request) {
 			json.NewEncoder(w).Encode("No records found with ID")
 			return
 		} else {
+			if pass != "" {
+				w.WriteHeader(http.StatusInternalServerError)
+				json.NewEncoder(w).Encode("Password Cannot be Updated Here...")
+				return
+			}
 			if name != "" {
 				_, err := db.Exec("UPDATE students SET student_name=? WHERE student_id=?", name, params["id"])
 				if err != nil {
@@ -167,27 +174,13 @@ func UpdateStudent(w http.ResponseWriter, r *http.Request) {
 					return
 				} else {
 					response.Status = 200
-					response.Message = "Data Updated Successfully"
+					response.Message = "Student Name Updated Successfully"
 					w.Header().Set("Content-Type", "application/json")
 					w.Header().Set("Access-Control-Allow-Origin", "*")
 					json.NewEncoder(w).Encode(response)
 				}
 			}
-			if pass != "" {
-				_, err := db.Exec("UPDATE students SET student_pass=? WHERE student_id=?", pass, params["id"])
-				if err != nil {
-					w.WriteHeader(http.StatusInternalServerError)
-					json.NewEncoder(w).Encode("Error Updating Data...")
-					json.NewEncoder(w).Encode(err.Error())
-					return
-				} else {
-					response.Status = 200
-					response.Message = "Data Updated Successfully"
-					w.Header().Set("Content-Type", "application/json")
-					w.Header().Set("Access-Control-Allow-Origin", "*")
-					json.NewEncoder(w).Encode(response)
-				}
-			}
+
 			if email != "" {
 				_, err := db.Exec("UPDATE students SET student_email=? WHERE student_id=?", email, params["id"])
 				if err != nil {
@@ -197,7 +190,7 @@ func UpdateStudent(w http.ResponseWriter, r *http.Request) {
 					return
 				} else {
 					response.Status = 200
-					response.Message = "Data Updated Successfully"
+					response.Message = "Student Email Updated Successfully"
 					w.Header().Set("Content-Type", "application/json")
 					w.Header().Set("Access-Control-Allow-Origin", "*")
 					json.NewEncoder(w).Encode(response)
@@ -212,7 +205,7 @@ func UpdateStudent(w http.ResponseWriter, r *http.Request) {
 					return
 				} else {
 					response.Status = 200
-					response.Message = "Data Updated Successfully"
+					response.Message = "Student Phone Updated Successfully"
 					w.Header().Set("Content-Type", "application/json")
 					w.Header().Set("Access-Control-Allow-Origin", "*")
 					json.NewEncoder(w).Encode(response)
